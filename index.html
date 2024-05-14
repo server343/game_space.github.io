@@ -13,7 +13,7 @@
             height: 100vh;
             overflow: hidden;
         }
-        #login-container {
+        #login-container, #register-container {
             width: 100%;
             height: 100%;
             display: flex;
@@ -22,7 +22,13 @@
             background: #f0f0f0;
             position: absolute;
         }
-        #login-form {
+        #login-container {
+            display: none;
+        }
+        #register-container {
+            display: none;
+        }
+        .form-container {
             background: white;
             padding: 20px;
             border-radius: 10px;
@@ -62,17 +68,43 @@
         .cooldown {
             margin-bottom: 10px;
         }
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
+    <div id="initial-container">
+        <div class="form-container">
+            <h2>Bienvenido</h2>
+            <div class="form-actions">
+                <button id="login-button">Iniciar Sesión</button>
+                <button id="register-button">Registrar</button>
+            </div>
+        </div>
+    </div>
     <div id="login-container">
-        <form id="login-form">
-            <h2>Inicio de Sesión</h2>
-            <label for="username">Nombre de Usuario:</label>
-            <input type="text" id="username" required>
-            <label for="password">Contraseña:</label>
-            <input type="password" id="password" required>
+        <form id="login-form" class="form-container">
+            <h2>Iniciar Sesión</h2>
+            <label for="login-username">Nombre de Usuario:</label>
+            <input type="text" id="login-username" required>
+            <label for="login-password">Contraseña:</label>
+            <input type="password" id="login-password" required>
             <button type="submit">Iniciar Sesión</button>
+            <button type="button" id="back-to-initial">Volver</button>
+        </form>
+    </div>
+    <div id="register-container">
+        <form id="register-form" class="form-container">
+            <h2>Registrar</h2>
+            <label for="register-username">Nombre de Usuario:</label>
+            <input type="text" id="register-username" required>
+            <label for="register-password">Contraseña:</label>
+            <input type="password" id="register-password" required>
+            <button type="submit">Registrar</button>
+            <button type="button" id="back-to-initial-reg">Volver</button>
         </form>
     </div>
     <div id="game-container"></div>
@@ -90,7 +122,6 @@
             <button id="buySuperAttack" disabled>Comprar superataque (150 puntos)</button>
             <p>Desbloquea una nueva nave por 200 puntos.</p>
             <button id="buyNewShip" disabled>Comprar nueva nave (200 puntos)</button>
-            <button id="closeShop">Cerrar Tienda</button>
         </div>
         <div id="cooldowns">
             <div class="cooldown">
