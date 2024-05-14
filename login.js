@@ -23,14 +23,35 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Object store created successfully');
     };
 
+    document.getElementById('login-button').addEventListener('click', () => {
+        document.getElementById('initial-container').style.display = 'none';
+        document.getElementById('login-container').style.display = 'flex';
+    });
+
+    document.getElementById('register-button').addEventListener('click', () => {
+        document.getElementById('initial-container').style.display = 'none';
+        document.getElementById('register-container').style.display = 'flex';
+    });
+
+    document.getElementById('back-to-initial').addEventListener('click', () => {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('initial-container').style.display = 'flex';
+    });
+
+    document.getElementById('back-to-initial-reg').addEventListener('click', () => {
+        document.getElementById('register-container').style.display = 'none';
+        document.getElementById('initial-container').style.display = 'flex';
+    });
+
     document.getElementById('login-form').addEventListener('submit', handleLogin);
+    document.getElementById('register-form').addEventListener('submit', handleRegister);
 });
 
 function handleLogin(event) {
     event.preventDefault();
 
-    let username = document.getElementById('username').value;
-    let password = document.getElementById('password').value;
+    let username = document.getElementById('login-username').value;
+    let password = document.getElementById('login-password').value;
 
     let transaction = db.transaction(['users'], 'readwrite');
     let objectStore = transaction.objectStore('users');
@@ -49,7 +70,33 @@ function handleLogin(event) {
                 alert('Contraseña incorrecta');
             }
         } else {
-            console.log('User not found, creating new user');
+            console.error('User not found');
+            alert('Usuario no encontrado');
+        }
+    };
+
+    getUserRequest.onerror = (event) => {
+        console.error('Error getting user:', event.target.errorCode);
+    };
+}
+
+function handleRegister(event) {
+    event.preventDefault();
+
+    let username = document.getElementById('register-username').value;
+    let password = document.getElementById('register-password').value;
+
+    let transaction = db.transaction(['users'], 'readwrite');
+    let objectStore = transaction.objectStore('users');
+
+    let getUserRequest = objectStore.get(username);
+
+    getUserRequest.onsuccess = (event) => {
+        let user = event.target.result;
+        if (user) {
+            console.error('User already exists');
+            alert('El usuario ya existe');
+        } else {
             let newUser = {
                 username: username,
                 password: password,
@@ -59,7 +106,7 @@ function handleLogin(event) {
             };
             let addUserRequest = objectStore.add(newUser);
             addUserRequest.onsuccess = (event) => {
-                console.log('User created successfully');
+                console.log('User registered successfully');
                 currentUser = newUser;
                 loadUserData(newUser);
             };
@@ -74,6 +121,8 @@ function handleLogin(event) {
 function loadUserData(user) {
     // Hide the login form and show the game
     document.getElementById('login-container').style.display = 'none';
+    document.getElementById('register-container').style.display = 'none';
+    document.getElementById('initial-container').style.display = 'none';
     document.getElementById('game-container').style.display = 'block';
     document.getElementById('ranking').style.display = 'block';
     document.getElementById('sidebar').style.display = 'block';
