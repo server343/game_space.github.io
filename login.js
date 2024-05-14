@@ -152,6 +152,11 @@ function loadUserData(user) {
 }
 
 function saveUserData() {
+    if (!currentUser) {
+        console.error('No user logged in');
+        return;
+    }
+
     let transaction = db.transaction(['users'], 'readwrite');
     let objectStore = transaction.objectStore('users');
     let updateUserRequest = objectStore.put({
