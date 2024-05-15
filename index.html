@@ -68,10 +68,15 @@
         .cooldown {
             margin-bottom: 10px;
         }
-        .form-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
+        #revive-button {
+            display: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background: green;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -131,6 +136,7 @@
                 <span>Superataque: </span><span id="superAttackCooldown">Listo</span>
             </div>
         </div>
+        <button id="revive-button">Revivir</button>
     </div>
     <script src="game.js"></script>
     <script src="login.js"></script>
