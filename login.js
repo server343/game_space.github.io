@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('login-form').addEventListener('submit', handleLogin);
     document.getElementById('register-form').addEventListener('submit', handleRegister);
+    document.getElementById('revive-button').addEventListener('click', reviveGame);
 });
 
 function handleLogin(event) {
@@ -183,4 +184,35 @@ function getPurchasesArray() {
     if (superAttackActive) purchases.push('superAttack');
     if (newShipActive) purchases.push('newShip');
     return purchases;
+}
+
+function reviveGame() {
+    // Reset game variables
+    score = 0;
+    lives = 3;
+    bonusActive = false;
+    upgradesActive = false;
+    superAttackActive = false;
+    newShipActive = false;
+
+    // Hide the revive button
+    document.getElementById('revive-button').style.display = 'none';
+
+    // Update the game UI
+    scoreText.setText('Puntos: ' + score);
+    for (let i = 0; i < heartImages.length; i++) {
+        heartImages[i].setVisible(i < lives);
+    }
+    document.getElementById('buyBonus').disabled = score < 50;
+    document.getElementById('buyUpgrades').disabled = score < 100;
+    document.getElementById('buySuperAttack').disabled = score < 150;
+    document.getElementById('buyNewShip').disabled = score < 200;
+
+    // Save the reset data
+    saveUserData();
+
+    // Restart the game
+    gameOver = false;
+    this.physics.resume();
+    ship.clearTint();
 }
