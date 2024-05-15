@@ -303,6 +303,7 @@ function loseLife(ship, meteor) {
             this.physics.pause();
             ship.setTint(0xff0000);
             gameOver = true;
+            document.getElementById('revive-button').style.display = 'block'; // Mostrar el botón de revivir
         }
     }
 }
