@@ -304,6 +304,11 @@ function loseLife(ship, meteor) {
             ship.setTint(0xff0000);
             gameOver = true;
             document.getElementById('revive-button').style.display = 'block'; // Mostrar el botón de revivir
+
+            // Asegurarse de que reviveGame se llama con el contexto correcto
+            document.getElementById('revive-button').onclick = () => {
+                reviveGame.call(this); // Llamar a reviveGame con el contexto del juego
+            };
         }
     }
 }
@@ -403,4 +408,37 @@ function updateCooldowns(time) {
     } else {
         superAttackCooldownElement.innerText = 'Listo';
     }
+}
+
+// Función para revivir el juego
+function reviveGame() {
+    // Reset game variables
+    score = 0;
+    lives = 3;
+    bonusActive = false;
+    upgradesActive = false;
+    superAttackActive = false;
+    newShipActive = false;
+
+    // Hide the revive button
+    document.getElementById('revive-button').style.display = 'none';
+
+    // Update the game UI
+    scoreText.setText('Puntos: ' + score);
+    for (let i = 0; i < heartImages.length; i++) {
+        heartImages[i].setVisible(i < lives);
+    }
+    document.getElementById('buyBonus').disabled = score < 50;
+    document.getElementById('buyUpgrades').disabled = score < 100;
+    document.getElementById('buySuperAttack').disabled = score < 150;
+    document.getElementById('buyNewShip').disabled = score < 200;
+
+    // Save the reset data
+    saveUserData();
+
+    // Restart the game
+    gameOver = false;
+    ship.clearTint();
+    this.physics.resume();
+    ship.setPosition(400, 500); // Reset ship position
 }
