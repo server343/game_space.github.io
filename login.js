@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onsuccess = (event) => {
         db = event.target.result;
         console.log('Database opened successfully');
+        displayRanking();
     };
 
     request.onupgradeneeded = (event) => {
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('login-form').addEventListener('submit', handleLogin);
     document.getElementById('register-form').addEventListener('submit', handleRegister);
     document.getElementById('revive-button').addEventListener('click', reviveGame);
+    document.getElementById('buyShipUpgrade').addEventListener('click', buyShipUpgrade);
 });
 
 function handleLogin(event) {
@@ -136,6 +138,7 @@ function loadUserData(user) {
     upgradesActive = purchases.includes('upgrades');
     superAttackActive = purchases.includes('superAttack');
     newShipActive = purchases.includes('newShip');
+    shipUpgradeActive = purchases.includes('shipUpgrade');
 
     scoreText.setText('Puntos: ' + score);
 
@@ -150,6 +153,7 @@ function loadUserData(user) {
     document.getElementById('buyUpgrades').disabled = upgradesActive || score < 100;
     document.getElementById('buySuperAttack').disabled = superAttackActive || score < 150;
     document.getElementById('buyNewShip').disabled = newShipActive || score < 200;
+    document.getElementById('buyShipUpgrade').disabled = shipUpgradeActive || score < 350;
 }
 
 function saveUserData() {
@@ -183,6 +187,7 @@ function getPurchasesArray() {
     if (upgradesActive) purchases.push('upgrades');
     if (superAttackActive) purchases.push('superAttack');
     if (newShipActive) purchases.push('newShip');
+    if (shipUpgradeActive) purchases.push('shipUpgrade');
     return purchases;
 }
 
@@ -194,6 +199,7 @@ function reviveGame() {
     upgradesActive = false;
     superAttackActive = false;
     newShipActive = false;
+    shipUpgradeActive = false;
 
     // Hide the revive button
     document.getElementById('revive-button').style.display = 'none';
@@ -207,12 +213,49 @@ function reviveGame() {
     document.getElementById('buyUpgrades').disabled = score < 100;
     document.getElementById('buySuperAttack').disabled = score < 150;
     document.getElementById('buyNewShip').disabled = score < 200;
+    document.getElementById('buyShipUpgrade').disabled = score < 350;
 
     // Save the reset data
     saveUserData();
 
     // Restart the game
     gameOver = false;
-    this.physics.resume();
     ship.clearTint();
+    game.scene.scenes[0].physics.resume();
+    ship.setPosition(400, 500); // Reset ship position
+}
+
+function buyShipUpgrade() {
+    if (score >= 350) {
+        score -= 350;
+        shipUpgradeActive = true;
+        scoreText.setText('Puntos: ' + score);
+        document.getElementById('buyShipUpgrade').disabled = true;
+        saveUserData();
+    }
+}
+
+function displayRanking() {
+    let transaction = db.transaction(['users'], 'readonly');
+    let objectStore = transaction.objectStore('users');
+    let request = objectStore.getAll();
+
+    request.onsuccess = (event) => {
+        let users = event.target.result;
+        users.sort((a, b) => b.score - a.score);
+
+        let rankingContainer = document.getElementById('ranking-container');
+        rankingContainer.innerHTML = '';
+
+        for (let i = 0; i < Math.min(5, users.length); i++) {
+            let user = users[i];
+            let userElement = document.createElement('div');
+            userElement.textContent = `${user.username}: ${user.score} puntos`;
+            rankingContainer.appendChild(userElement);
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('Error retrieving ranking:', event.target.errorCode);
+    };
 }
