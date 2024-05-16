@@ -27,6 +27,7 @@ let eKey;
 let lastFired = 0;
 let meteors;
 let maxMeteors = 5;
+let meteorSpeed = 300;  // Variable para la velocidad de los meteoritos
 let lives;
 let heartImages = [];
 let score = 0;
@@ -38,6 +39,7 @@ let bonusActive = false;
 let upgradesActive = false;
 let superAttackActive = false;
 let newShipActive = false;
+let shipUpgradeActive = false;
 let gameOver = false;
 let shieldActive = false;
 let shieldCooldownTime = 0;
@@ -92,6 +94,7 @@ function create() {
     document.getElementById('buyUpgrades').addEventListener('click', buyUpgrades);
     document.getElementById('buySuperAttack').addEventListener('click', buySuperAttack);
     document.getElementById('buyNewShip').addEventListener('click', buyNewShip);
+    document.getElementById('buyShipUpgrade').addEventListener('click', buyShipUpgrade);
 
     shieldCooldownElement = document.getElementById('shieldCooldown');
     superAttackCooldownElement = document.getElementById('superAttackCooldown');
@@ -120,20 +123,21 @@ function update(time) {
         document.getElementById('buyUpgrades').disabled = score < 100;
         document.getElementById('buySuperAttack').disabled = score < 150;
         document.getElementById('buyNewShip').disabled = score < 200;
+        document.getElementById('buyShipUpgrade').disabled = score < 350;
         return;
     }
 
     if (Phaser.Input.Keyboard.JustDown(eKey)) {
         if ((upgradesActive || newShipActive) && time > shieldCooldownTime) {
             activateShield();
-            shieldCooldownTime = time + (newShipActive ? 160000 : 480000); // 2.66 minutes for new ship, 8 minutes otherwise
+            shieldCooldownTime = time + (newShipActive ? (shipUpgradeActive ? 117000 : 120000) : 480000); // 2.95 minutes for upgraded ship, 2.66 minutes for new ship, 8 minutes otherwise
         } else if (superAttackActive && time > superAttackCooldownTime) {
             activateSuperAttack();
             superAttackCooldownTime = time + 30000; // 30 seconds cooldown for super attack
         }
     }
 
-    if (shieldActive && time > shieldCooldownTime - (newShipActive ? 160000 : 480000) + (newShipActive ? 120000 : 30000)) {
+    if (shieldActive && time > shieldCooldownTime - (newShipActive ? (shipUpgradeActive ? 117000 : 120000) : 480000) + (newShipActive ? 123000 : 30000)) {
         deactivateShield();
     }
 
@@ -141,7 +145,7 @@ function update(time) {
 
     ship.setVelocity(0);
 
-    let speed = newShipActive ? 400 : (upgradesActive ? 300 : 200);
+    let speed = newShipActive ? (shipUpgradeActive ? 450 : 400) : (upgradesActive ? 300 : 200);
 
     if (cursors.left.isDown) {
         ship.setVelocityX(-speed);
@@ -155,7 +159,7 @@ function update(time) {
         ship.setVelocityY(speed);
     }
 
-    let fireDelay = newShipActive ? 100 : (upgradesActive ? 300 : 500);
+    let fireDelay = newShipActive ? (shipUpgradeActive ? 75 : 100) : (upgradesActive ? 300 : 500);
 
     if (spaceBar.isDown && time > lastFired) {
         fireBullets(ship.x, ship.y - 20);
@@ -175,6 +179,16 @@ function update(time) {
             heart.spawn();
             heartSpawnTime = time + Phaser.Math.Between(10000, 20000);
         }
+    }
+
+    // Aumentar la velocidad de los meteoritos cuando se alcancen los 200 puntos
+    if (score >= 200 && meteorSpeed === 300) {
+        meteorSpeed = 450; // Incrementar la velocidad de los meteoritos en un 50%
+        meteors.getChildren().forEach(meteor => {
+            if (meteor.active) {
+                meteor.body.setVelocityY(meteorSpeed);
+            }
+        });
     }
 }
 
@@ -240,7 +254,7 @@ class Meteor extends Phaser.GameObjects.Rectangle {
         this.body.reset(x, y);
         this.setActive(true);
         this.setVisible(true);
-        this.body.setVelocityY(300);
+        this.body.setVelocityY(meteorSpeed);
     }
 
     update() {
@@ -309,6 +323,9 @@ function loseLife(ship, meteor) {
             document.getElementById('revive-button').onclick = () => {
                 reviveGame.call(this); // Llamar a reviveGame con el contexto del juego
             };
+
+            // Actualizar el ranking
+            updateRanking(score);
         }
     }
 }
@@ -365,6 +382,16 @@ function buyNewShip() {
     }
 }
 
+function buyShipUpgrade() {
+    if (score >= 350) {
+        score -= 350;
+        shipUpgradeActive = true;
+        scoreText.setText('Puntos: ' + score);
+        document.getElementById('buyShipUpgrade').disabled = true;
+        saveUserData();
+    }
+}
+
 function sumarPuntos(puntos) {
     score += puntos;
     scoreText.setText('Puntos: ' + score);
@@ -372,6 +399,7 @@ function sumarPuntos(puntos) {
     document.getElementById('buyUpgrades').disabled = score < 100;
     document.getElementById('buySuperAttack').disabled = score < 150;
     document.getElementById('buyNewShip').disabled = score < 200;
+    document.getElementById('buyShipUpgrade').disabled = score < 350;
     saveUserData();
 }
 
@@ -410,35 +438,29 @@ function updateCooldowns(time) {
     }
 }
 
-// Función para revivir el juego
-function reviveGame() {
-    // Reset game variables
-    score = 0;
-    lives = 3;
-    bonusActive = false;
-    upgradesActive = false;
-    superAttackActive = false;
-    newShipActive = false;
-
-    // Hide the revive button
-    document.getElementById('revive-button').style.display = 'none';
-
-    // Update the game UI
-    scoreText.setText('Puntos: ' + score);
-    for (let i = 0; i < heartImages.length; i++) {
-        heartImages[i].setVisible(i < lives);
+function updateRanking(finalScore) {
+    if (!currentUser) {
+        console.error('No user logged in');
+        return;
     }
-    document.getElementById('buyBonus').disabled = score < 50;
-    document.getElementById('buyUpgrades').disabled = score < 100;
-    document.getElementById('buySuperAttack').disabled = score < 150;
-    document.getElementById('buyNewShip').disabled = score < 200;
 
-    // Save the reset data
-    saveUserData();
+    let transaction = db.transaction(['users'], 'readwrite');
+    let objectStore = transaction.objectStore('users');
+    let getUserRequest = objectStore.get(currentUser.username);
 
-    // Restart the game
-    gameOver = false;
-    ship.clearTint();
-    this.physics.resume();
-    ship.setPosition(400, 500); // Reset ship position
+    getUserRequest.onsuccess = (event) => {
+        let user = event.target.result;
+        if (user) {
+            user.score = Math.max(user.score, finalScore);
+            let updateUserRequest = objectStore.put(user);
+            updateUserRequest.onsuccess = (event) => {
+                console.log('User score updated successfully');
+                displayRanking();
+            };
+        }
+    };
+
+    getUserRequest.onerror = (event) => {
+        console.error('Error getting user:', event.target.errorCode);
+    };
 }
