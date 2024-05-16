@@ -78,6 +78,9 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        #ranking-container {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -114,7 +117,8 @@
     </div>
     <div id="game-container"></div>
     <div id="ranking">
-        <!-- Aquí se añadirá el ranking de puntos de jugadores más adelante -->
+        <h2>Ranking</h2>
+        <div id="ranking-container"></div>
     </div>
     <div id="sidebar">
         <div id="shop">
@@ -127,6 +131,8 @@
             <button id="buySuperAttack" disabled>Comprar superataque (150 puntos)</button>
             <p>Desbloquea una nueva nave por 200 puntos.</p>
             <button id="buyNewShip" disabled>Comprar nueva nave (200 puntos)</button>
+            <p>Mejora tu nave de 200 puntos por 350 puntos.</p>
+            <button id="buyShipUpgrade" disabled>Mejorar nave (350 puntos)</button>
         </div>
         <div id="cooldowns">
             <div class="cooldown">
